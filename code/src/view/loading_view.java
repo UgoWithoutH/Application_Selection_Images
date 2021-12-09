@@ -37,5 +37,12 @@ public class loading_view {
                 System.out.println(fs[i].getAbsolutePath());
             }
         }
+        System.out.println(mouseEvent.getY()/32);
+        System.out.println(mouseEvent.getX()/32);
+    }
+
+    public void positionclic(MouseEvent mouseEvent) {
+            System.out.println("Numéro de Tuile en X : " + (int)mouseEvent.getX()/32);
+            System.out.println("Numéro de Tuile en Y : " + (int)mouseEvent.getY()/32);
     }
 }
