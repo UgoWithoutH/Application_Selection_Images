@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.HBox?>
+
+<HBox fx:controller="view.loading_view" alignment="CENTER" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+    <children>
+        <Button prefWidth="200" prefHeight="50" onMouseClicked="#click">
+            Chargement des tilesets
+        </Button>
+    </children>
+</HBox>
