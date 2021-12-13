@@ -15,8 +15,7 @@ import javafx.scene.layout.FlowPane;
 import modele.Decoupeur;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class Selection_view {
 
@@ -26,9 +25,13 @@ public class Selection_view {
     @FXML
     private FlowPane affichageDecoupe;
 
-    String idTabSelected = "tab1";
+    private static final String NOMMAGE_TAB = "tab";
 
-    private List<Image> image;
+    String idTabSelected = NOMMAGE_TAB+"1";
+
+    private List<Image> mesImagesCourrantes = new LinkedList<>();
+
+    private Map<String,List<Image>> map = new HashMap<>();
 
     private double largeur;
 
@@ -37,59 +40,62 @@ public class Selection_view {
     private int cptpx = 0;
 
     @FXML
-    public void initialize(){
+    public void initialize() {
         int cpt = 1;
 
-        cv = new Canvas(100,1000);
+        cv = new Canvas(100, 500);
         affichageDecoupe.getChildren().add(cv);
         Decoupeur d = new Decoupeur();
-        File f = new File(System.getProperty("user.dir")+"/ressources/Images");
+        File f = new File(System.getProperty("user.dir") + "/ressources/Images");
         var truc = Arrays.asList(f.list());
         ScrollPane sp;
-        for(var file : truc){
-            File tileset = new File (System.getProperty("user.dir")+"/ressources/Images/"+file);
+        for (var file : truc) {
+            File tileset = new File(System.getProperty("user.dir") + "/ressources/Images/" + file);
             Image taille = new Image(String.valueOf(tileset));
-            double largeurImage = taille.getWidth()/32;
-            double hauteurImage = taille.getHeight()/32;
-            image = d.decoupe(tileset.getAbsolutePath(),(int)largeurImage,(int)hauteurImage);
+            double largeurImage = taille.getWidth() / 32;
+            double hauteurImage = taille.getHeight() / 32;
+            var decoupe = d.decoupe(tileset.getAbsolutePath(), (int) largeurImage, (int) hauteurImage);
             System.out.println(tileset);
-            sp = new ScrollPane(new ImageView(new Image(f+"\\"+file)));
+            sp = new ScrollPane(new ImageView(new Image(f + "\\" + file)));
 
             sp.setOnMouseClicked(new EventHandler<MouseEvent>() {
-                @Override
-                public void handle(MouseEvent mouseEvent) {
-                    positionclic(mouseEvent);
-                }
-            }
+                                     @Override
+                                     public void handle(MouseEvent mouseEvent) {
+                                         positionclic(mouseEvent);
+                                     }
+                                 }
             );
-            Tab tab = new Tab(file,sp);
-            tab.setId("tab" + cpt);
+            Tab tab = new Tab(file, sp);
+            tab.setId(NOMMAGE_TAB + cpt);
+            map.put(tab.getId(), decoupe);
             tabpane.getTabs().add(tab);
             tabpane.getSelectionModel().selectedItemProperty().addListener(
                     new ChangeListener<Tab>() {
                         @Override
                         public void changed(ObservableValue<? extends Tab> ov, Tab t, Tab t1) {
                             idTabSelected = t1.getId();
+                            mesImagesCourrantes = map.get(t1.getId());
                         }
                     }
             );
             cpt++;
         }
+        mesImagesCourrantes = map.get("tab1");
     }
 
 
     public void positionclic(MouseEvent mouseEvent) {
+        System.out.println(mesImagesCourrantes);
         System.out.println("Tab numéro : " + idTabSelected);
         System.out.println("Numéro de Tuile en X : " + (int)mouseEvent.getX()/32);
         System.out.println("Numéro de Tuile en Y : " + (int) mouseEvent.getY()/32);
         //System.out.println("Liste des tuiles : " + image);
         Decoupeur d=new Decoupeur();
-
-        int numero= (int)mouseEvent.getX()/32+((int)(int)mouseEvent.getY()/32)*29;
+        int numero= (int)mouseEvent.getX()/32+((int)(int)mouseEvent.getY()/32)*32;
         System.out.println("num :" + numero);
-        System.out.println(image.get(numero));
+        System.out.println(mesImagesCourrantes.get(numero));
         cptpx += 32;
-        cv.getGraphicsContext2D().drawImage(image.get(numero),0,cptpx);
+        cv.getGraphicsContext2D().drawImage(mesImagesCourrantes.get(numero),0,cptpx);
     }
 
 
