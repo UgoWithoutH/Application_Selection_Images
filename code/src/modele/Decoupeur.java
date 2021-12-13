@@ -1,4 +1,4 @@
-package view;
+package modele;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
@@ -56,7 +56,7 @@ public class Decoupeur {
 
     /**
      * Redéfinition du HashCode
-     * @return Entier de l'hachage des attributs de view.Decoupeur
+     * @return Entier de l'hachage des attributs de modele.Decoupeur
      * @author Tremblay Jeremy, Vignon Ugo, Viton Antoine, Wissocq Maxime, Coudour Adrien
      */
     @Override
@@ -96,7 +96,7 @@ public class Decoupeur {
      */
     @Override
     public String toString() {
-        return "view.Decoupeur{" +
+        return "modele.Decoupeur{" +
                 ", listeDeTuiles=" + listeDeTuiles.toString() +
                 '}';
     }
