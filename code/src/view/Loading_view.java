@@ -9,7 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 
-public class loading_view {
+public class Loading_view {
 
     LinkedList<MonFiltre> filtres = new LinkedList<>();
 
