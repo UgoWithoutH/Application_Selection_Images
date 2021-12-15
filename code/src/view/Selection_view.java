@@ -55,7 +55,7 @@ public class Selection_view {
             double largeurImage = taille.getWidth() / 32;
             double hauteurImage = taille.getHeight() / 32;
             var decoupe = d.decoupe(tileset.getAbsolutePath(), (int) largeurImage, (int) hauteurImage);
-            System.out.println(tileset);
+            System.out.println(decoupe);
             sp = new ScrollPane(new ImageView(new Image(f + "\\" + file)));
 
             sp.setOnMouseClicked(new EventHandler<MouseEvent>() {

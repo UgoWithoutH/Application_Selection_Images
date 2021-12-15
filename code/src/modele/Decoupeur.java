@@ -9,7 +9,6 @@ import java.util.List;
 
 
 public class Decoupeur {
-    private List<Image> listeDeTuiles = new ArrayList<Image>();
 
     /**
      * Fonction de découpage des Tuiles
@@ -19,7 +18,9 @@ public class Decoupeur {
      * @return La liste des Tuiles découpé en format Image
      * @author Tremblay Jeremy, Vignon Ugo, Viton Antoine, Wissocq Maxime, Coudour Adrien
      */
-    public List<Image> decoupe(String chemin, int largeurTuile, int hauteurTuile) {
+    public static List<Image> decoupe(String chemin, int largeurTuile, int hauteurTuile) {
+        List<Image> listeDeTuiles = new ArrayList<Image>();
+
         Image image = new Image(chemin);
         PixelReader lecteur = image.getPixelReader();
         double largeurImage = image.getWidth() / largeurTuile;
@@ -34,70 +35,5 @@ public class Decoupeur {
             }
         }
         return listeDeTuiles;
-    }
-
-    /**
-     * Getter Liste de Tuiles
-     * @return La liste Des Tuiles
-     * @author Tremblay Jeremy, Vignon Ugo, Viton Antoine, Wissocq Maxime, Coudour Adrien
-     */
-    public List<Image> getListeDeTuiles() {
-        return listeDeTuiles;
-    }
-
-    /**
-     * Permet de modifier la liste des tuiles
-     * @param listeDeTuiles La nouvelle liste de Tuiles
-     * @author Tremblay Jeremy, Vignon Ugo, Viton Antoine, Wissocq Maxime, Coudour Adrien
-     */
-    public void setListeDeTuiles(ArrayList<Image> listeDeTuiles) {
-        this.listeDeTuiles = listeDeTuiles;
-    }
-
-    /**
-     * Redéfinition du HashCode
-     * @return Entier de l'hachage des attributs de modele.Decoupeur
-     * @author Tremblay Jeremy, Vignon Ugo, Viton Antoine, Wissocq Maxime, Coudour Adrien
-     */
-    @Override
-    public int hashCode() {
-        return 31 * listeDeTuiles.hashCode();
-    }
-
-    /**
-     * Redéfintion du equals
-     * @param obj Objet que l'on veut comparé
-     * @return true si égalité sinon false
-     * @author Tremblay Jeremy, Vignon Ugo, Viton Antoine, Wissocq Maxime, Coudour Adrien
-     */
-    @Override
-    public boolean equals(Object obj) {
-        if(obj == null) return false;
-        if(this == obj) return true;
-        if (getClass() != obj.getClass()) return false;
-        Decoupeur autre = (Decoupeur) obj;
-        return equals(autre);
-    }
-
-    /**
-     * Equals
-     * @param d découpeur que l'on veut comparer
-     * @return true si égalité sinon false
-     * @author Tremblay Jeremy, Vignon Ugo, Viton Antoine, Wissocq Maxime, Coudour Adrien
-     */
-    public boolean equals(Decoupeur d) {
-        return listeDeTuiles.equals(d.getListeDeTuiles());
-    }
-
-    /**
-     * Redéfinition du ToString
-     * @return chaîne de caractère à afficher
-     * @author Tremblay Jeremy, Vignon Ugo, Viton Antoine, Wissocq Maxime, Coudour Adrien
-     */
-    @Override
-    public String toString() {
-        return "modele.Decoupeur{" +
-                ", listeDeTuiles=" + listeDeTuiles.toString() +
-                '}';
     }
 }
