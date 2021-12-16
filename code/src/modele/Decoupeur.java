@@ -5,6 +5,7 @@ import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritableImage;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 
@@ -18,8 +19,8 @@ public class Decoupeur {
      * @return La liste des Tuiles découpé en format Image
      * @author Tremblay Jeremy, Vignon Ugo, Viton Antoine, Wissocq Maxime, Coudour Adrien
      */
-    public static List<Image> decoupe(String chemin, int largeurTuile, int hauteurTuile) {
-        List<Image> listeDeTuiles = new ArrayList<Image>();
+    public static LinkedList<Image> decoupe(String chemin, int largeurTuile, int hauteurTuile) {
+        LinkedList<Image> listeDeTuiles = new LinkedList<>();
 
         Image image = new Image(chemin);
         PixelReader lecteur = image.getPixelReader();

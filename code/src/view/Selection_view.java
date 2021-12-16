@@ -2,23 +2,16 @@ package view;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.geometry.Orientation;
-import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.control.ScrollBar;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.stage.Stage;
 import modele.Decoupeur;
 
 import java.io.File;
@@ -33,19 +26,16 @@ public class Selection_view {
     private FlowPane affichageDecoupe;
 
     private static final String NOMMAGE_TAB = "tab";
-    private static final String NOMMAGE_SCROLLPANE = "s";
-
+    private static final int WINDOW_HEIGHT = 700;
     String idTabSelected = NOMMAGE_TAB+"1";
-
-    private List<Image> mesImagesCourrantes = new LinkedList<>();
-
-    private Map<String,List<Image>> map = new HashMap<>();
-
-    private double largeur;
-
+    private LinkedList<Image> currentImages = new LinkedList<>();
+    private final LinkedList<Image> selectedimages = new LinkedList<>();
+    private Map<String,LinkedList<Image>> map = new HashMap<>();
     private Canvas cv;
+    private int cptPixelY = 0;
+    private int cptPixelX = 0;
+    private boolean drawable = true;
 
-    private int cptpx = 0;
 
     @FXML
     public void initialize() {
@@ -54,30 +44,55 @@ public class Selection_view {
         double heightCanvas = 500;
 
         cv = new Canvas(widthCanvas, heightCanvas);
+        Button btnExport = new Button("Export tileset");
+        Button btnSuppr = new Button("UNDO");
+        btnExport.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                System.out.println("export");
+            }
+        });
+
+        btnSuppr.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                if(!selectedimages.isEmpty()) {
+                    if(cptPixelY == 0){
+                        if(cptPixelX != 0){
+                            cptPixelX -= 32;
+                            cptPixelY = ((int) (cv.getHeight()/32))*32;
+                        }
+                    }
+                    if(!(cptPixelY == 0 && cptPixelX == 0)){
+                        selectedimages.removeLast();
+                        cv.getGraphicsContext2D().clearRect(cptPixelX, cptPixelY -32,32,32);
+                        cptPixelY -=32;
+                    }
+                    if(cptPixelY == 0 && cptPixelX == 0){
+                        drawImagesUndo(cv,selectedimages);
+                    }
+                }
+            }
+        });
+        //affichageDecoupe.setStyle("-fx-border-width: 2; -fx-border-color: black; -fx-border-style: solid;");
         affichageDecoupe.getChildren().add(cv);
-        affichageDecoupe.setMaxSize(widthCanvas,heightCanvas);
-        affichageDecoupe.setMinSize(widthCanvas,heightCanvas);
+        affichageDecoupe.getChildren().add(btnExport);
+        affichageDecoupe.getChildren().add(btnSuppr);
+        affichageDecoupe.setMaxWidth(widthCanvas);
+        affichageDecoupe.setMaxHeight(WINDOW_HEIGHT);
         Decoupeur d = new Decoupeur();
         File f = new File(System.getProperty("user.dir") + "/ressources/Images");
-        var truc = Arrays.asList(f.list());
+        var ArrayFile = Arrays.asList(f.list());
         ScrollPane sp;
-        for (var file : truc) {
+        for (var file : ArrayFile) {
             File tileset = new File(System.getProperty("user.dir") + "/ressources/Images/" + file);
             Image tilesetImage = new Image(String.valueOf(tileset));
             double largeurImage = tilesetImage.getWidth() / 32;
             double hauteurImage = tilesetImage.getHeight() / 32;
             var decoupe = d.decoupe(tileset.getAbsolutePath(), (int) largeurImage, (int) hauteurImage);
-            //GridPane
+
             //ScrollPane
             sp = new ScrollPane(); //new ImageView(new Image(f + "\\" + file))
-            sp.setId(NOMMAGE_SCROLLPANE+cptpx);
-            sp.setOnMouseClicked(new EventHandler<MouseEvent>() {
-                                     @Override
-                                     public void handle(MouseEvent mouseEvent) {
-                                         positionclic(mouseEvent);
-                                     }
-                                 }
-            );
 
             GridPane gp = initializeGridPane(decoupe,tilesetImage);
             sp.setContent(gp);
@@ -91,13 +106,52 @@ public class Selection_view {
                         @Override
                         public void changed(ObservableValue<? extends Tab> ov, Tab t, Tab t1) {
                             idTabSelected = t1.getId();
-                            mesImagesCourrantes = map.get(t1.getId());
+                            currentImages = map.get(t1.getId());
                         }
                     }
             );
             cpt++;
         }
-        mesImagesCourrantes = map.get("tab1");
+        currentImages = map.get("tab1");
+    }
+
+    public void drawImagesUndo(Canvas cv, LinkedList<Image> myList){
+        int maxTilesY = (int) cv.getHeight()/32;
+        int maxTilesX = (int) cv.getWidth()/32;
+        int maxTiles = (maxTilesY*maxTilesX);
+        int i = 0;
+        int numberElement = myList.size();
+        int z;
+        int numberElementIteration;
+        LinkedList<Image> imagesDrawable = new LinkedList<>();
+
+        if(numberElement >= maxTiles){
+            z = numberElement - maxTiles;
+            numberElementIteration = maxTiles;
+            while(i != maxTiles){
+                imagesDrawable.add(myList.get(z));
+                i++;
+                z++;
+            }
+        }
+        else {
+            z = 0;
+            numberElementIteration = numberElement;
+            while (i != numberElement) {
+                imagesDrawable.add(myList.get(z));
+                i++;
+                z++;
+            }
+        }
+        for(i = 0; i<numberElementIteration;i++){
+            if((int) cv.getHeight()/32 == cptPixelY/32) {
+                cptPixelY = 0;
+                cptPixelX += 32;
+            }
+            cv.getGraphicsContext2D().drawImage(imagesDrawable.get(i),cptPixelX,cptPixelY);
+            cptPixelY+= 32;
+            System.out.println(i);
+        }
     }
 
     public GridPane initializeGridPane(List<Image> myListDecoupe, Image tileset){
@@ -113,44 +167,31 @@ public class Selection_view {
                 x = 0;
                 currentDimension = 0;
             }
-            gp.add(new ImageView(image),x,y);
+            ImageView myImageView = new ImageView(image);
+            myImageView.setOnMouseClicked(new EventHandler<MouseEvent>() {
+                @Override
+                public void handle(MouseEvent event) {
+                    if((int) cv.getHeight()/32 == cptPixelY/32) {
+                        if (((int) cv.getWidth() / 32) == ((cptPixelX+32)/32)) {
+                            cv.getGraphicsContext2D().clearRect(0, 0, cv.getWidth(), cv.getHeight());
+                            cptPixelY = 0;
+                            cptPixelX = 0;
+                        } else {
+                            cptPixelX += 32;
+                            cptPixelY = 0;
+                        }
+
+                    }
+                    cv.getGraphicsContext2D().drawImage(myImageView.getImage(),cptPixelX, cptPixelY);
+                    selectedimages.add(myImageView.getImage());
+                    cptPixelY += 32;
+                }
+            });
+            gp.add(myImageView,x,y);
             currentDimension += dimensionTile;
             x++;
         }
         gp.setGridLinesVisible(true);
         return gp;
     }
-
-    private void addGridEvent(GridPane gp) {
-        gp.getChildren().forEach(item -> {
-            item.setOnMouseClicked(new EventHandler<MouseEvent>() {
-                @Override
-                public void handle(MouseEvent event) {
-                    if (event.getClickCount() == 2) {
-                        System.out.println("doubleClick");
-                    }
-                    if (event.isPrimaryButtonDown()) {
-                        System.out.println("PrimaryKey event");
-                    }
-
-                }
-            });
-
-        });
-    }
-
-    public void positionclic(MouseEvent mouseEvent) {
-        System.out.println("Tab numéro : " + idTabSelected);
-        System.out.println("Numéro de Tuile en X : " + (int)mouseEvent.getX()/32);
-        System.out.println("Numéro de Tuile en Y : " + (int) mouseEvent.getY()/32);
-        //System.out.println("Liste des tuiles : " + image);
-        Decoupeur d=new Decoupeur();
-        int numero= (int)mouseEvent.getX()/32+((int)(int)mouseEvent.getY()/32)*32;
-        System.out.println("num :" + numero);
-        System.out.println(mesImagesCourrantes.get(numero));
-        cptpx += 32;
-        cv.getGraphicsContext2D().drawImage(mesImagesCourrantes.get(numero),0,cptpx);
-    }
-
-
 }
