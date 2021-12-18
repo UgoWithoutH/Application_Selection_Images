@@ -81,11 +81,11 @@ public class Selection_view {
         affichageDecoupe.setMaxWidth(widthCanvas);
         affichageDecoupe.setMaxHeight(WINDOW_HEIGHT);
         Decoupeur d = new Decoupeur();
-        File f = new File(System.getProperty("user.dir") + "/ressources/Images");
+        File f = new File(System.getProperty("user.dir")+"/code/ressources/Images");
         var ArrayFile = Arrays.asList(f.list());
         ScrollPane sp;
         for (var file : ArrayFile) {
-            File tileset = new File(System.getProperty("user.dir") + "/ressources/Images/" + file);
+            File tileset = new File(System.getProperty("user.dir") + "/code/ressources/Images/" + file);
             Image tilesetImage = new Image(String.valueOf(tileset));
             double largeurImage = tilesetImage.getWidth() / 32;
             double hauteurImage = tilesetImage.getHeight() / 32;
@@ -158,7 +158,7 @@ public class Selection_view {
         GridPane gp = new GridPane();
         int x = 0, y = 0;
         double dimensionTile = myListDecoupe.get(0).getWidth();
-        double dimensionMax = 704;
+        double dimensionMax = tileset.getWidth();
         double currentDimension = 0;
 
         for(var image : myListDecoupe){
