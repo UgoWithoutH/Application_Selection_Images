@@ -86,9 +86,7 @@ public class Selection_view {
             @Override
             public void handle(ActionEvent event) {
                 changeCataloguePage(getCptCurrentPage()+1);
-                affichageTab(currentPage,nbColumnCanvas,nbRowsCancas);
                 initializeCanvas(cv,nbColumnCanvas,nbRowsCancas);
-                affichageTab(currentPage,nbColumnCanvas,nbRowsCancas);
             }
         });
         Button previousPage = new Button("Previous");
