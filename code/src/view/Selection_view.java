@@ -1,14 +1,12 @@
 package view;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ReadOnlyIntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -17,6 +15,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
+import modele.CataloguePage;
 import modele.Decoupeur;
 
 import java.io.File;
@@ -25,10 +24,7 @@ import java.util.*;
 public class Selection_view {
 
     @FXML
-    private TabPane tabpane;
-
-    @FXML
-    private FlowPane affichageDecoupe;
+    private Pane mainNode;
 
     private static final int WINDOW_HEIGHT = 700;
     private static final int WINDOW_WIDTH = 950;
@@ -38,20 +34,15 @@ public class Selection_view {
     private LinkedList<Image> currentImages = new LinkedList<>();
     private ImageView imageViewSelected;
     private final Map<String,LinkedList<Image>> map = new HashMap<>();
-    private Map<Integer,Image[][]> cataloguePage = new HashMap<>();
-    private Image[][] currentPage;
-    private int cptPages = 0;
+    private final CataloguePage cataloguePage = new CataloguePage();
+    private Image[][] tabPreview;
     private boolean draw = true;
-    private Image whiteSquare = new Image(System.getProperty("user.dir")+"/code/ressources/Images/WhiteSquare32x32.png");
     //canvas
     private Canvas cv;
     private int nbColumnCanvas;
     private int nbRowsCancas;
-    //binding current page
-    private IntegerProperty cptCurrentPage = new SimpleIntegerProperty();
-    public int getCptCurrentPage() {return cptCurrentPage.get();}
-    public void setCptCurrentPage(int cptCurrentPage) {this.cptCurrentPage.set(cptCurrentPage);}
-    public ReadOnlyIntegerProperty cptCurrentPageProperty(){return cptCurrentPage;}
+    private Image whiteSquare = new Image(System.getProperty("user.dir")+"/code/ressources/Images/WhiteSquare32x32.png");
+    SplitPane mainNodeSelection;
 
     @FXML
     public void initialize() {
@@ -60,8 +51,7 @@ public class Selection_view {
         double heightCanvas = 500;
         nbColumnCanvas = (int) widthCanvas/32;
         nbRowsCancas = (int) heightCanvas/32;
-
-        addCataloguePage(nbColumnCanvas,nbRowsCancas);
+        cataloguePage.addPage(nbColumnCanvas,nbRowsCancas);
         cv = new Canvas(widthCanvas, heightCanvas);
         cv.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
@@ -77,7 +67,7 @@ public class Selection_view {
             @Override
             public void handle(ActionEvent event) {
                 cv.getGraphicsContext2D().clearRect(0,0,widthCanvas,heightCanvas);
-                addCataloguePage(nbColumnCanvas,nbRowsCancas);
+                cataloguePage.addPage(nbColumnCanvas,nbRowsCancas);
                 initializeCanvas(cv,nbColumnCanvas,nbRowsCancas);
             }
         });
@@ -85,7 +75,7 @@ public class Selection_view {
         nextPage.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                changeCataloguePage(getCptCurrentPage()+1);
+                cataloguePage.changePage(cataloguePage.getCptCurrentPage()+1);
                 initializeCanvas(cv,nbColumnCanvas,nbRowsCancas);
             }
         });
@@ -93,7 +83,7 @@ public class Selection_view {
         previousPage.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                changeCataloguePage(getCptCurrentPage()-1);
+                cataloguePage.changePage(cataloguePage.getCptCurrentPage()-1);
                 initializeCanvas(cv,nbColumnCanvas,nbRowsCancas);
             }
         });
@@ -118,11 +108,11 @@ public class Selection_view {
         btnPreview.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-
+                initializePreviewView();
             }
         });
         Label labelPage = new Label();
-        labelPage.textProperty().bind(cptCurrentPageProperty().asString());
+        labelPage.textProperty().bind(cataloguePage.cptCurrentPageProperty().asString());
         HBox hbTop = new HBox();
         hbTop.setAlignment(Pos.CENTER);
         HBox hb1 = new HBox();
@@ -133,12 +123,17 @@ public class Selection_view {
         hb2.getChildren().addAll(new Label("Page : "),labelPage);
         hbTop.getChildren().addAll(hb1,hb2);
         vb.getChildren().addAll(hbTop,cv);
-        //affichageDecoupe.setStyle("-fx-border-width: 2; -fx-border-color: black; -fx-border-style: solid;");
-        affichageDecoupe.getChildren().add(vb);
-        affichageDecoupe.getChildren().add(btnExport);
-        affichageDecoupe.getChildren().add(btnSuppr);
+        FlowPane affichageDecoupe = new FlowPane();
+        affichageDecoupe.setAlignment(Pos.CENTER);
+        affichageDecoupe.getChildren().addAll(vb,btnExport,btnSuppr,btnPreview);
         affichageDecoupe.setMaxSize(WINDOW_WIDTH/2,WINDOW_HEIGHT);
-        initializeTabs();
+        TabPane tabpane = new TabPane();
+        initializeTabs(tabpane);
+        mainNodeSelection = new SplitPane(affichageDecoupe,tabpane);
+        mainNodeSelection.setDividerPositions(0.21237458193979933);
+        mainNodeSelection.setOrientation(Orientation.HORIZONTAL);
+        mainNodeSelection.setPrefSize(WINDOW_WIDTH,WINDOW_HEIGHT/2);
+        mainNode.getChildren().add(mainNodeSelection);
     }
 
 public void affichageTab(Image[][] tab, int nbColumn, int nbRows){
@@ -150,10 +145,76 @@ public void affichageTab(Image[][] tab, int nbColumn, int nbRows){
         }
 }
 
+//PreviewView
+    public void initializePreviewView(){
+        mainNode.getChildren().clear();
+        int nbColumnPreviewCanvas = nbColumnCanvas * cataloguePage.getNbPages();
+        int nbRowsPreviewCanvas = nbRowsCancas;
+        Canvas cv = new Canvas(nbColumnPreviewCanvas*32,nbRowsPreviewCanvas*32);
+        HBox mainNodePreview = new HBox();
+        VBox vb = new VBox();
+        Button btnBack = new Button("Back");
+        btnBack.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                mainNode.getChildren().clear();
+                mainNode.getChildren().add(mainNodeSelection);
+            }
+        });
+        initializePreviewCanvas(cv,nbColumnPreviewCanvas,nbRowsPreviewCanvas);
+        ScrollPane sp = new ScrollPane(cv);
+        sp.setMaxSize(WINDOW_WIDTH-50,500);
+        HBox hb = new HBox(sp);
+        hb.setAlignment(Pos.CENTER);
+        vb.getChildren().addAll(btnBack,hb);
+        hb.setPrefWidth(WINDOW_WIDTH-20);
+        mainNode.getChildren().add(vb);
+    }
 
+    public Image[][] initializeArrayExport(){
+        var tab = new Image[cataloguePage.getNbPages()*nbColumnCanvas][cataloguePage.getNbPages()*nbRowsCancas];
+        int realX = 0;
 
-//Initialize Tabs
-    public void initializeTabs(){
+        for(int i = 1; i <= cataloguePage.getNbPages();i++){
+            var page = cataloguePage.getPage(i);
+
+            for(int x = 0; x < nbColumnCanvas; x++){
+                for(int y = 0; y < nbRowsCancas; y++){
+                    tab[realX][y] = page[x][y];
+                }
+                realX++;
+            }
+        }
+        return tab;
+    }
+
+    public void initializePreviewCanvas(Canvas cv, int nbColumnCanvas, int nbRowsCancas){
+        System.out.println(nbColumnCanvas+ " "+nbRowsCancas);
+        initializeImagesPreviewCanvas(cv,nbColumnCanvas,nbRowsCancas);
+        initializeLinesCanvas(cv,nbColumnCanvas,nbRowsCancas);
+    }
+
+    public void initializeImagesPreviewCanvas(Canvas cv, int nbColumn, int nbRows){
+        int widthDraw = 0, heightDraw = 0;
+        int nbTab = nbColumn/nbColumnCanvas;
+        GraphicsContext gc = cv.getGraphicsContext2D();
+
+        for(int i = 1; i <= nbTab; i++) {
+            var page = cataloguePage.getPage(i);
+            for (int x = 0; x < nbColumnCanvas; x++) {
+                for (int y = 0; y < nbRowsCancas; y++) {
+                    heightDraw = heightDraw;
+                    gc.drawImage(page[x][y], widthDraw, heightDraw);
+                    heightDraw += 32;
+                }
+                widthDraw += 32;
+                heightDraw = 0;
+            }
+        }
+    }
+
+// Tabs
+    public void initializeTabs(TabPane tabpane){
         Decoupeur d = new Decoupeur();
         File f = new File(System.getProperty("user.dir")+"/code/ressources/Images");
         var ArrayFile = Arrays.asList(f.list());
@@ -187,47 +248,6 @@ public void affichageTab(Image[][] tab, int nbColumn, int nbRows){
         currentImages = map.get("tab1");
     }
 
-//Catalogue
-    public void addCataloguePage(int nbColumn, int nbRows){
-        cptPages++;
-        currentPage = initializeArrayTiles(nbColumn,nbRows);
-        cataloguePage.put(cptPages,currentPage);
-        setCptCurrentPage(cptPages);
-    }
-
-    public void changeCataloguePage(int numPage){
-        var page = cataloguePage.get(numPage);
-
-        if(page != null){
-            setCptCurrentPage(numPage);
-            currentPage = page;
-        }
-    }
-
-    public Image[][] initializeArrayTiles(int nbColumn, int nbRows){
-        var tab = new Image[nbColumn][nbRows];
-
-        for(int x = 0; x < nbColumn; x++){
-            for(int y = 0; y < nbRows; y++){
-                tab[x][y] = whiteSquare;
-            }
-        }
-        return tab;
-    }
-
-    public void addTilesInArray(Image[][] tab, Image image, double positionXDraw, double positionYDraw){
-        int x = (int) positionXDraw/32;
-        int y = (int) positionYDraw/32;
-        tab[x][y] = image;
-    }
-
-    public void deleteTilesInArray(Image[][] tab, double positionXDraw, double positionYDraw){
-        int x = (int) positionXDraw/32;
-        int y = (int) positionYDraw/32;
-        tab[x][y] = whiteSquare;
-    }
-
-
     //Canvas
     public void drawClickCanvas(MouseEvent event){
         double decalageX = 2.66;
@@ -242,18 +262,17 @@ public void affichageTab(Image[][] tab, int nbColumn, int nbRows){
             if (imageViewSelected == null) return;
             cv.getGraphicsContext2D().clearRect(positionXDraw,positionYDraw,32,32);
             cv.getGraphicsContext2D().drawImage(imageViewSelected.getImage(), positionXDraw, positionYDraw);
-            addTilesInArray(currentPage,imageViewSelected.getImage(),positionXDraw,positionYDraw);
+            cataloguePage.addTilesInArray(imageViewSelected.getImage(),positionXDraw,positionYDraw);
             imageViewSelected = null;
         }
         else{
             cv.getGraphicsContext2D().clearRect(positionXDraw,positionYDraw,32,32);
             cv.getGraphicsContext2D().drawImage(whiteSquare,positionXDraw,positionYDraw);
-            deleteTilesInArray(currentPage,positionXDraw,positionYDraw);
+            cataloguePage.deleteTilesInArray(positionXDraw,positionYDraw);
         }
         initializeLinesCanvas(cv,nbColumnCanvas,nbRowsCancas);
     }
 
-    //initialize
     public void initializeCanvas(Canvas cv, int nbColumn, int nbRows){
         initializeImagesCanvas(cv, nbColumn, nbRows);
         initializeLinesCanvas(cv, nbColumn, nbRows);
@@ -265,11 +284,11 @@ public void affichageTab(Image[][] tab, int nbColumn, int nbRows){
 
         for (int x = 0; x < nbColumn; x++){
             for(int y = 0; y < nbRows; y++){
-                if(currentPage == null) {
+                if(cataloguePage.getCurrentPage() == null) {
                     gc.drawImage(whiteSquare, widthDraw, heightDraw);
                 }
                 else{
-                    gc.drawImage(currentPage[x][y], widthDraw, heightDraw);
+                    gc.drawImage(cataloguePage.getCurrentPage()[x][y], widthDraw, heightDraw);
                 }
                 heightDraw += 32;
             }
@@ -300,7 +319,7 @@ public void affichageTab(Image[][] tab, int nbColumn, int nbRows){
             drawY += 32;
         }
     }
-
+    //GridPane
     public GridPane initializeGridPane(List<Image> myListDecoupe, Image tileset){
         GridPane gp = new GridPane();
         int x = 0, y = 0;

@@ -3,11 +3,8 @@
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.Pane?>
 
-<SplitPane fx:controller="view.Selection_view" dividerPositions="0.21237458193979933" orientation="HORIZONTAL" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+<Pane fx:id="mainNode" fx:controller="view.Selection_view" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+</Pane>
 
-    <FlowPane alignment="CENTER" fx:id="affichageDecoupe"></FlowPane>
-
-    <TabPane fx:id="tabpane">
-    </TabPane>
-</SplitPane>
