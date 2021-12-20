@@ -1,17 +1,22 @@
 package view;
 
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ReadOnlyIntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.*;
 import modele.Decoupeur;
 
 import java.io.File;
@@ -25,27 +30,78 @@ public class Selection_view {
     @FXML
     private FlowPane affichageDecoupe;
 
-    private static final String NOMMAGE_TAB = "tab";
     private static final int WINDOW_HEIGHT = 700;
+    private static final int WINDOW_WIDTH = 950;
+    private static final String NOMMAGE_TAB = "tab";
+    private int cptTabs = 1;
     String idTabSelected = NOMMAGE_TAB+"1";
     private LinkedList<Image> currentImages = new LinkedList<>();
-    private final LinkedList<Image> selectedimages = new LinkedList<>();
-    private Map<String,LinkedList<Image>> map = new HashMap<>();
+    private ImageView imageViewSelected;
+    private final Map<String,LinkedList<Image>> map = new HashMap<>();
+    private Map<Integer,Image[][]> cataloguePage = new HashMap<>();
+    private Image[][] currentPage;
+    private int cptPages = 0;
+    private boolean draw = true;
+    private Image whiteSquare = new Image(System.getProperty("user.dir")+"/code/ressources/Images/WhiteSquare32x32.png");
+    //canvas
     private Canvas cv;
-    private int cptPixelY = 0;
-    private int cptPixelX = 0;
-    private boolean drawable = true;
-
+    private int nbColumnCanvas;
+    private int nbRowsCancas;
+    //binding current page
+    private IntegerProperty cptCurrentPage = new SimpleIntegerProperty();
+    public int getCptCurrentPage() {return cptCurrentPage.get();}
+    public void setCptCurrentPage(int cptCurrentPage) {this.cptCurrentPage.set(cptCurrentPage);}
+    public ReadOnlyIntegerProperty cptCurrentPageProperty(){return cptCurrentPage;}
 
     @FXML
     public void initialize() {
-        int cpt = 1;
-        double widthCanvas = 200;
+        double widthDelimitation = WINDOW_WIDTH/2;
+        double widthCanvas = widthDelimitation;
         double heightCanvas = 500;
+        nbColumnCanvas = (int) widthCanvas/32;
+        nbRowsCancas = (int) heightCanvas/32;
 
+        addCataloguePage(nbColumnCanvas,nbRowsCancas);
         cv = new Canvas(widthCanvas, heightCanvas);
-        Button btnExport = new Button("Export tileset");
-        Button btnSuppr = new Button("UNDO");
+        cv.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                drawClickCanvas(event);
+            }
+        });
+        initializeCanvas(cv,nbColumnCanvas,nbRowsCancas);
+        VBox vb = new VBox();
+        vb.setPrefSize(widthDelimitation,heightCanvas);
+        Button newPage = new Button("Add Page");
+        newPage.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                cv.getGraphicsContext2D().clearRect(0,0,widthCanvas,heightCanvas);
+                addCataloguePage(nbColumnCanvas,nbRowsCancas);
+                initializeCanvas(cv,nbColumnCanvas,nbRowsCancas);
+            }
+        });
+        Button nextPage = new Button("Next");
+        nextPage.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                changeCataloguePage(getCptCurrentPage()+1);
+                affichageTab(currentPage,nbColumnCanvas,nbRowsCancas);
+                initializeCanvas(cv,nbColumnCanvas,nbRowsCancas);
+                affichageTab(currentPage,nbColumnCanvas,nbRowsCancas);
+            }
+        });
+        Button previousPage = new Button("Previous");
+        previousPage.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                changeCataloguePage(getCptCurrentPage()-1);
+                initializeCanvas(cv,nbColumnCanvas,nbRowsCancas);
+            }
+        });
+        Button btnExport = new Button("Export Tileset");
+        Button btnSuppr = new Button("Erase");
+        Button btnPreview = new Button("Preview");
         btnExport.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
@@ -56,30 +112,50 @@ public class Selection_view {
         btnSuppr.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                if(!selectedimages.isEmpty()) {
-                    if(cptPixelY == 0){
-                        if(cptPixelX != 0){
-                            cptPixelX -= 32;
-                            cptPixelY = ((int) (cv.getHeight()/32))*32;
-                        }
-                    }
-                    if(!(cptPixelY == 0 && cptPixelX == 0)){
-                        selectedimages.removeLast();
-                        cv.getGraphicsContext2D().clearRect(cptPixelX, cptPixelY -32,32,32);
-                        cptPixelY -=32;
-                    }
-                    if(cptPixelY == 0 && cptPixelX == 0){
-                        drawImagesUndo(cv,selectedimages);
-                    }
-                }
+                draw = false;
+                imageViewSelected = null;
             }
         });
+
+        btnPreview.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+
+            }
+        });
+        Label labelPage = new Label();
+        labelPage.textProperty().bind(cptCurrentPageProperty().asString());
+        HBox hbTop = new HBox();
+        hbTop.setAlignment(Pos.CENTER);
+        HBox hb1 = new HBox();
+        hb1.getChildren().addAll(previousPage,newPage,nextPage);
+        HBox hb2 = new HBox();
+        HBox.setMargin(hb2,new Insets(0,0,0,20));
+        hb2.setAlignment(Pos.CENTER_RIGHT);
+        hb2.getChildren().addAll(new Label("Page : "),labelPage);
+        hbTop.getChildren().addAll(hb1,hb2);
+        vb.getChildren().addAll(hbTop,cv);
         //affichageDecoupe.setStyle("-fx-border-width: 2; -fx-border-color: black; -fx-border-style: solid;");
-        affichageDecoupe.getChildren().add(cv);
+        affichageDecoupe.getChildren().add(vb);
         affichageDecoupe.getChildren().add(btnExport);
         affichageDecoupe.getChildren().add(btnSuppr);
-        affichageDecoupe.setMaxWidth(widthCanvas);
-        affichageDecoupe.setMaxHeight(WINDOW_HEIGHT);
+        affichageDecoupe.setMaxSize(WINDOW_WIDTH/2,WINDOW_HEIGHT);
+        initializeTabs();
+    }
+
+public void affichageTab(Image[][] tab, int nbColumn, int nbRows){
+        for(int i = 0; i < nbColumn;i++){
+            for(int z = 0; z < nbRows; z++){
+                System.out.print(tab[i][z]);
+            }
+            System.out.println();
+        }
+}
+
+
+
+//Initialize Tabs
+    public void initializeTabs(){
         Decoupeur d = new Decoupeur();
         File f = new File(System.getProperty("user.dir")+"/code/ressources/Images");
         var ArrayFile = Arrays.asList(f.list());
@@ -90,15 +166,13 @@ public class Selection_view {
             double largeurImage = tilesetImage.getWidth() / 32;
             double hauteurImage = tilesetImage.getHeight() / 32;
             var decoupe = d.decoupe(tileset.getAbsolutePath(), (int) largeurImage, (int) hauteurImage);
-
             //ScrollPane
-            sp = new ScrollPane(); //new ImageView(new Image(f + "\\" + file))
-
+            sp = new ScrollPane();
             GridPane gp = initializeGridPane(decoupe,tilesetImage);
             sp.setContent(gp);
             //Tab
             Tab tab = new Tab(file, sp);
-            tab.setId(NOMMAGE_TAB + cpt);
+            tab.setId(NOMMAGE_TAB + cptTabs);
             map.put(tab.getId(), decoupe);
             tabpane.getTabs().add(tab);
             tabpane.getSelectionModel().selectedItemProperty().addListener(
@@ -110,47 +184,122 @@ public class Selection_view {
                         }
                     }
             );
-            cpt++;
+            cptTabs++;
         }
         currentImages = map.get("tab1");
     }
 
-    public void drawImagesUndo(Canvas cv, LinkedList<Image> myList){
-        int maxTilesY = (int) cv.getHeight()/32;
-        int maxTilesX = (int) cv.getWidth()/32;
-        int maxTiles = (maxTilesY*maxTilesX);
-        int i = 0;
-        int numberElement = myList.size();
-        int z;
-        int numberElementIteration;
-        LinkedList<Image> imagesDrawable = new LinkedList<>();
+//Catalogue
+    public void addCataloguePage(int nbColumn, int nbRows){
+        cptPages++;
+        currentPage = initializeArrayTiles(nbColumn,nbRows);
+        cataloguePage.put(cptPages,currentPage);
+        setCptCurrentPage(cptPages);
+    }
 
-        if(numberElement >= maxTiles){
-            z = numberElement - maxTiles;
-            numberElementIteration = maxTiles;
-            while(i != maxTiles){
-                imagesDrawable.add(myList.get(z));
-                i++;
-                z++;
+    public void changeCataloguePage(int numPage){
+        var page = cataloguePage.get(numPage);
+
+        if(page != null){
+            setCptCurrentPage(numPage);
+            currentPage = page;
+        }
+    }
+
+    public Image[][] initializeArrayTiles(int nbColumn, int nbRows){
+        var tab = new Image[nbColumn][nbRows];
+
+        for(int x = 0; x < nbColumn; x++){
+            for(int y = 0; y < nbRows; y++){
+                tab[x][y] = whiteSquare;
             }
         }
-        else {
-            z = 0;
-            numberElementIteration = numberElement;
-            while (i != numberElement) {
-                imagesDrawable.add(myList.get(z));
-                i++;
-                z++;
-            }
+        return tab;
+    }
+
+    public void addTilesInArray(Image[][] tab, Image image, double positionXDraw, double positionYDraw){
+        int x = (int) positionXDraw/32;
+        int y = (int) positionYDraw/32;
+        tab[x][y] = image;
+    }
+
+    public void deleteTilesInArray(Image[][] tab, double positionXDraw, double positionYDraw){
+        int x = (int) positionXDraw/32;
+        int y = (int) positionYDraw/32;
+        tab[x][y] = whiteSquare;
+    }
+
+
+    //Canvas
+    public void drawClickCanvas(MouseEvent event){
+        double decalageX = 2.66;
+        double decalageY = 20;
+
+        double positionXClick = event.getSceneX()-decalageX;
+        double positionYClick = event.getSceneY()-decalageY;
+        int positionXDraw = ((int) positionXClick/32)*32;
+        int positionYDraw = ((int) positionYClick/32)*32;
+
+        if(draw) {
+            if (imageViewSelected == null) return;
+            cv.getGraphicsContext2D().clearRect(positionXDraw,positionYDraw,32,32);
+            cv.getGraphicsContext2D().drawImage(imageViewSelected.getImage(), positionXDraw, positionYDraw);
+            addTilesInArray(currentPage,imageViewSelected.getImage(),positionXDraw,positionYDraw);
+            imageViewSelected = null;
         }
-        for(i = 0; i<numberElementIteration;i++){
-            if((int) cv.getHeight()/32 == cptPixelY/32) {
-                cptPixelY = 0;
-                cptPixelX += 32;
+        else{
+            cv.getGraphicsContext2D().clearRect(positionXDraw,positionYDraw,32,32);
+            cv.getGraphicsContext2D().drawImage(whiteSquare,positionXDraw,positionYDraw);
+            deleteTilesInArray(currentPage,positionXDraw,positionYDraw);
+        }
+        initializeLinesCanvas(cv,nbColumnCanvas,nbRowsCancas);
+    }
+
+    //initialize
+    public void initializeCanvas(Canvas cv, int nbColumn, int nbRows){
+        initializeImagesCanvas(cv, nbColumn, nbRows);
+        initializeLinesCanvas(cv, nbColumn, nbRows);
+    }
+    public void initializeImagesCanvas(Canvas cv, int nbColumn, int nbRows){
+        int widthDraw = 0, heightDraw = 0;
+
+        GraphicsContext gc = cv.getGraphicsContext2D();
+
+        for (int x = 0; x < nbColumn; x++){
+            for(int y = 0; y < nbRows; y++){
+                if(currentPage == null) {
+                    gc.drawImage(whiteSquare, widthDraw, heightDraw);
+                }
+                else{
+                    gc.drawImage(currentPage[x][y], widthDraw, heightDraw);
+                }
+                heightDraw += 32;
             }
-            cv.getGraphicsContext2D().drawImage(imagesDrawable.get(i),cptPixelX,cptPixelY);
-            cptPixelY+= 32;
-            System.out.println(i);
+            widthDraw += 32;
+            heightDraw = 0;
+        }
+    }
+
+    public void initializeLinesCanvas(Canvas cv, int nbColumn, int nbRows){
+        int widthMax = ((int) cv.getWidth()/32)*32;
+        int heightMax = ((int) cv.getHeight()/32)*32;
+        double drawX = 0,drawY = 0;
+
+        GraphicsContext gc = cv.getGraphicsContext2D();
+        for(int i = 0; i <= nbColumn; i++){
+            gc.beginPath();
+            gc.moveTo(drawX,0);
+            gc.lineTo(drawX,heightMax);
+            gc.stroke();
+            drawX += 32;
+        }
+
+        for(int i = 0; i <= nbRows; i++) {
+            gc.beginPath();
+            gc.moveTo(0,drawY);
+            gc.lineTo(widthMax,drawY);
+            gc.stroke();
+            drawY += 32;
         }
     }
 
@@ -171,20 +320,8 @@ public class Selection_view {
             myImageView.setOnMouseClicked(new EventHandler<MouseEvent>() {
                 @Override
                 public void handle(MouseEvent event) {
-                    if((int) cv.getHeight()/32 == cptPixelY/32) {
-                        if (((int) cv.getWidth() / 32) == ((cptPixelX+32)/32)) {
-                            cv.getGraphicsContext2D().clearRect(0, 0, cv.getWidth(), cv.getHeight());
-                            cptPixelY = 0;
-                            cptPixelX = 0;
-                        } else {
-                            cptPixelX += 32;
-                            cptPixelY = 0;
-                        }
-
-                    }
-                    cv.getGraphicsContext2D().drawImage(myImageView.getImage(),cptPixelX, cptPixelY);
-                    selectedimages.add(myImageView.getImage());
-                    cptPixelY += 32;
+                    imageViewSelected = myImageView;
+                    draw = true;
                 }
             });
             gp.add(myImageView,x,y);
