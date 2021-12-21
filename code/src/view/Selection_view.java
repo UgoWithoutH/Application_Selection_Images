@@ -47,12 +47,13 @@ public class Selection_view {
     private Canvas cv;
     private int nbColumnCanvas;
     private int nbRowsCancas;
-    private Image whiteSquare = new Image(System.getProperty("user.dir")+"/code/ressources/Images/WhiteSquare32x32.png");
+    private Image whiteSquare;
     private SplitPane mainNodeSelection;
     private LinkedList<File> listTilesets = new LinkedList<>();
 
     @FXML
     public void initialize(){
+        whiteSquare = new Image(getClass().getResource("/Images/WhiteSquare32x32.png").toString());
         Button btn = new Button("CHARGER TILESETS");
         btn.setPrefSize(200,50);
         HBox hb = new HBox(btn);
