@@ -67,6 +67,7 @@ public class Selection_view {
                 fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("PNG", "*.png"),
                         new FileChooser.ExtensionFilter("JPG","*.jpeg","*.jpeg","*.jpe","*.jfif"));
                 listFile = fileChooser.showOpenMultipleDialog(mainNode.getScene().getWindow());
+                if(listFile == null) return;
                 for(File f : listFile){
                     listTilesets.add(f);
                 }
@@ -195,6 +196,7 @@ public void exportImage(){
     f.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("PNG", "*.png"),
                                    new FileChooser.ExtensionFilter("JPG","*.jpeg","*.jpeg","*.jpe","*.jfif"));
     File file = f.showSaveDialog(mainNode.getScene().getWindow());
+    if(file == null) return;
     f.setInitialDirectory(file.getParentFile());
     try {
         ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "PNG", file);
@@ -247,7 +249,6 @@ public void exportImage(){
     }
 
     public void initializePreviewCanvas(Canvas cv, int nbColumnCanvas, int nbRowsCancas){
-        System.out.println(nbColumnCanvas+ " "+nbRowsCancas);
         initializeImagesPreviewCanvas(cv,nbColumnCanvas,nbRowsCancas);
         initializeLinesCanvas(cv,nbColumnCanvas,nbRowsCancas);
     }
@@ -278,13 +279,10 @@ public void exportImage(){
         int cpt = 1;
 
         for (var tileset : listTilesets) {
-            System.out.println(tileset.toString());
             Image tilesetImage = new Image(tileset.toString());
-            System.out.println(tilesetImage.getWidth()+ " "+tilesetImage.getHeight());
             double largeurImage = tilesetImage.getWidth() / 32;
             double hauteurImage = tilesetImage.getHeight() / 32;
-            System.out.println("-------"+ largeurImage+ " "+hauteurImage);
-            var decoupe = d.decoupe(tileset.toString(), (int) largeurImage, (int) hauteurImage);
+            var decoupe = d.decoupe(tileset.toString(), 32, 32);
             //ScrollPane
             sp = new ScrollPane();
             GridPane gp = initializeGridPane(decoupe,tilesetImage);

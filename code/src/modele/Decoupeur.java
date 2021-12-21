@@ -27,8 +27,8 @@ public class Decoupeur {
         double largeurImage = image.getWidth() / largeurTuile;
         double hauteurImage = image.getHeight() / hauteurTuile;
 
-        for (int i = 0; i < largeurImage; i++){
-            for (int j = 0; j < hauteurImage; j++) {
+        for (int i = 0; i < hauteurImage; i++){
+            for (int j = 0; j < largeurImage; j++) {
                 WritableImage imageTuile = new WritableImage(lecteur,
                 j * largeurTuile, i * hauteurTuile, largeurTuile, hauteurTuile);
                 listeDeTuiles.add(imageTuile);
