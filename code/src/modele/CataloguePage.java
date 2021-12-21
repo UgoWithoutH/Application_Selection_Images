@@ -5,17 +5,23 @@ import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.image.Image;
 
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class CataloguePage {
     private Map<Integer, Image[][]> cataloguePage = new HashMap<>();
-    private Image whiteSquare = new Image(getClass().getResource("/Images/WhiteSquare32x32.png").toString());
+    private Image whiteSquare = new Image(String.valueOf(getClass().getResource("/Images/WhiteSquare32x32.png").toURI().toURL()));
     private int nbPages = 0;
     private Image[][] currentPage;
 
 
     private IntegerProperty cptCurrentPage = new SimpleIntegerProperty();
+
+    public CataloguePage() throws MalformedURLException, URISyntaxException {
+    }
+
     public int getCptCurrentPage() {return cptCurrentPage.get();}
     public void setCptCurrentPage(int cptCurrentPage) {this.cptCurrentPage.set(cptCurrentPage);}
     public ReadOnlyIntegerProperty cptCurrentPageProperty(){return cptCurrentPage;}

@@ -24,6 +24,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.nio.IntBuffer;
 import java.util.*;
 
@@ -51,9 +53,12 @@ public class Selection_view {
     private SplitPane mainNodeSelection;
     private LinkedList<File> listTilesets = new LinkedList<>();
 
+    public Selection_view() throws MalformedURLException, URISyntaxException {
+    }
+
     @FXML
-    public void initialize(){
-        whiteSquare = new Image(getClass().getResource("/Images/WhiteSquare32x32.png").toString());
+    public void initialize() throws URISyntaxException, MalformedURLException {
+        whiteSquare = new Image(String.valueOf(getClass().getResource("/Images/WhiteSquare32x32.png").toURI().toURL()));
         Button btn = new Button("CHARGER TILESETS");
         btn.setPrefSize(200,50);
         HBox hb = new HBox(btn);
@@ -297,6 +302,7 @@ public void exportImage(){
                     new ChangeListener<Tab>() {
                         @Override
                         public void changed(ObservableValue<? extends Tab> ov, Tab t, Tab t1) {
+                            if(t1 == null) return;
                             idTabSelected = t1.getId();
                             currentImages = map.get(t1.getId());
                         }
