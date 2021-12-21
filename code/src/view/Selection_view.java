@@ -2,6 +2,7 @@ package view;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -11,14 +12,19 @@ import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.image.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
+import javafx.stage.FileChooser;
 import modele.CataloguePage;
 import modele.Decoupeur;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.IntBuffer;
 import java.util.*;
 
 public class Selection_view {
@@ -42,10 +48,35 @@ public class Selection_view {
     private int nbColumnCanvas;
     private int nbRowsCancas;
     private Image whiteSquare = new Image(System.getProperty("user.dir")+"/code/ressources/Images/WhiteSquare32x32.png");
-    SplitPane mainNodeSelection;
+    private SplitPane mainNodeSelection;
+    private LinkedList<File> listTilesets = new LinkedList<>();
 
     @FXML
-    public void initialize() {
+    public void initialize(){
+        Button btn = new Button("CHARGER TILESETS");
+        btn.setPrefSize(200,50);
+        HBox hb = new HBox(btn);
+        hb.setPrefSize(935,565);
+        hb.setAlignment(Pos.CENTER);
+        btn.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                List<File> listFile;
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Selection tilesets");
+                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("PNG", "*.png"),
+                        new FileChooser.ExtensionFilter("JPG","*.jpeg","*.jpeg","*.jpe","*.jfif"));
+                listFile = fileChooser.showOpenMultipleDialog(mainNode.getScene().getWindow());
+                for(File f : listFile){
+                    listTilesets.add(f);
+                }
+                initializeSelectionView();
+            }
+        });
+        mainNode.getChildren().add(hb);
+    }
+
+    public void initializeSelectionView() {
         double widthDelimitation = WINDOW_WIDTH/2;
         double widthCanvas = widthDelimitation;
         double heightCanvas = 500;
@@ -90,10 +121,11 @@ public class Selection_view {
         Button btnExport = new Button("Export Tileset");
         Button btnSuppr = new Button("Erase");
         Button btnPreview = new Button("Preview");
+
         btnExport.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                System.out.println("export");
+                exportImage();
             }
         });
 
@@ -133,16 +165,42 @@ public class Selection_view {
         mainNodeSelection.setDividerPositions(0.21237458193979933);
         mainNodeSelection.setOrientation(Orientation.HORIZONTAL);
         mainNodeSelection.setPrefSize(WINDOW_WIDTH,WINDOW_HEIGHT/2);
+        mainNode.getChildren().clear();
         mainNode.getChildren().add(mainNodeSelection);
     }
 
-public void affichageTab(Image[][] tab, int nbColumn, int nbRows){
-        for(int i = 0; i < nbColumn;i++){
-            for(int z = 0; z < nbRows; z++){
-                System.out.print(tab[i][z]);
+public void exportImage(){
+    Image[][] tab = initializeArrayExport();
+    WritableImage writableImage = new WritableImage(tab.length * 32, tab[0].length * 32);
+    PixelWriter px = writableImage.getPixelWriter();
+
+    for (int x = 0; x < tab.length; x++) {
+        for (int y = 0; y < tab[0].length; y++) {
+            int[] pixels = new int[32 * 32];
+            PixelReader prt = tab[x][y].getPixelReader();
+            PixelFormat.Type type = prt.getPixelFormat().getType();
+            WritablePixelFormat<IntBuffer> format = null;
+            if (type == PixelFormat.Type.INT_ARGB_PRE) {
+                format = PixelFormat.getIntArgbPreInstance();
+            } else {
+                format = PixelFormat.getIntArgbInstance();
             }
-            System.out.println();
+            prt.getPixels(0, 0, 32, 32, format, pixels, 0, 32);
+            px.setPixels(x * 32, y * 32, 32, 32, format, pixels, 0, 32);
         }
+    }
+    FileChooser f = new FileChooser();
+    f.setTitle("Save tileset");
+    f.setInitialFileName("tileset");
+    f.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("PNG", "*.png"),
+                                   new FileChooser.ExtensionFilter("JPG","*.jpeg","*.jpeg","*.jpe","*.jfif"));
+    File file = f.showSaveDialog(mainNode.getScene().getWindow());
+    f.setInitialDirectory(file.getParentFile());
+    try {
+        ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "PNG", file);
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
 }
 
 //PreviewView
@@ -172,7 +230,7 @@ public void affichageTab(Image[][] tab, int nbColumn, int nbRows){
     }
 
     public Image[][] initializeArrayExport(){
-        var tab = new Image[cataloguePage.getNbPages()*nbColumnCanvas][cataloguePage.getNbPages()*nbRowsCancas];
+        var tab = new Image[cataloguePage.getNbPages()*nbColumnCanvas][nbRowsCancas];
         int realX = 0;
 
         for(int i = 1; i <= cataloguePage.getNbPages();i++){
@@ -216,21 +274,23 @@ public void affichageTab(Image[][] tab, int nbColumn, int nbRows){
 // Tabs
     public void initializeTabs(TabPane tabpane){
         Decoupeur d = new Decoupeur();
-        File f = new File(System.getProperty("user.dir")+"/code/ressources/Images");
-        var ArrayFile = Arrays.asList(f.list());
         ScrollPane sp;
-        for (var file : ArrayFile) {
-            File tileset = new File(System.getProperty("user.dir") + "/code/ressources/Images/" + file);
-            Image tilesetImage = new Image(String.valueOf(tileset));
+        int cpt = 1;
+
+        for (var tileset : listTilesets) {
+            System.out.println(tileset.toString());
+            Image tilesetImage = new Image(tileset.toString());
+            System.out.println(tilesetImage.getWidth()+ " "+tilesetImage.getHeight());
             double largeurImage = tilesetImage.getWidth() / 32;
             double hauteurImage = tilesetImage.getHeight() / 32;
-            var decoupe = d.decoupe(tileset.getAbsolutePath(), (int) largeurImage, (int) hauteurImage);
+            System.out.println("-------"+ largeurImage+ " "+hauteurImage);
+            var decoupe = d.decoupe(tileset.toString(), (int) largeurImage, (int) hauteurImage);
             //ScrollPane
             sp = new ScrollPane();
             GridPane gp = initializeGridPane(decoupe,tilesetImage);
             sp.setContent(gp);
             //Tab
-            Tab tab = new Tab(file, sp);
+            Tab tab = new Tab("tileset n°"+cpt, sp);
             tab.setId(NOMMAGE_TAB + cptTabs);
             map.put(tab.getId(), decoupe);
             tabpane.getTabs().add(tab);
@@ -244,6 +304,7 @@ public void affichageTab(Image[][] tab, int nbColumn, int nbRows){
                     }
             );
             cptTabs++;
+            cpt++;
         }
         currentImages = map.get("tab1");
     }
