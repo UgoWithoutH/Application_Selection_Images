@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class CataloguePage {
     private Map<Integer, Image[][]> cataloguePage = new HashMap<>();
-    private Image whiteSquare = new Image(System.getProperty("user.dir")+"/code/ressources/Images/WhiteSquare32x32.png");
+    private Image whiteSquare = new Image(getClass().getResource("/Images/WhiteSquare32x32.png").toString());
     private int nbPages = 0;
     private Image[][] currentPage;
 
