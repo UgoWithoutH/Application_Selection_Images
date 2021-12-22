@@ -285,10 +285,20 @@ public void exportImage(){
         int cpt = 1;
 
         for (var tileset : listTilesets) {
-            Image tilesetImage = new Image(tileset.toString());
+            Image tilesetImage = null;
+            try {
+                tilesetImage = new Image(tileset.toURI().toURL().toString());
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
             double largeurImage = tilesetImage.getWidth() / 32;
             double hauteurImage = tilesetImage.getHeight() / 32;
-            var decoupe = d.decoupe(tileset.toString(), 32, 32);
+            LinkedList<Image> decoupe = null;
+            try {
+                decoupe = d.decoupe(tileset.toURI().toURL().toString(), 32, 32);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
             //ScrollPane
             sp = new ScrollPane();
             GridPane gp = initializeGridPane(decoupe,tilesetImage);
