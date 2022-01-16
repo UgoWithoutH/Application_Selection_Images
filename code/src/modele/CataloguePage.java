@@ -12,9 +12,11 @@ import java.util.Map;
 
 public class CataloguePage {
     private Map<Integer, Image[][]> cataloguePage = new HashMap<>();
-    private Image whiteSquare = new Image(String.valueOf(getClass().getResource("/Images/WhiteSquare32x32.png").toURI().toURL()));
+    private Image whiteSquare = new Image(String.valueOf(getClass().getResource("/Images/TransparentSquare32x32.png").toURI().toURL()));
     private int nbPages = 0;
     private Image[][] currentPage;
+    private final int DEFAULT_COLUMN = 14;
+    private final int DEFAULT_ROWS = 15;
 
 
     private IntegerProperty cptCurrentPage = new SimpleIntegerProperty();
@@ -52,9 +54,9 @@ public class CataloguePage {
         return cataloguePage.get(num);
     }
 
-    public void addPage(int nbColumn, int nbRows){
+    public void addPage(){
         nbPages++;
-        currentPage = initializeArrayTiles(nbColumn,nbRows);
+        currentPage = initializeArrayTiles(DEFAULT_COLUMN,DEFAULT_ROWS);
         cataloguePage.put(nbPages,currentPage);
         setCptCurrentPage(nbPages);
     }
