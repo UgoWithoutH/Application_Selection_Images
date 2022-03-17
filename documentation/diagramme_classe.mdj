@@ -305,6 +305,7 @@
 											"top": 194,
 											"width": 460.1669921875,
 											"height": 13,
+											"underline": true,
 											"text": "-DEFAULT_COLUMN: int = 14 {frozen}",
 											"horizontalAlignment": 0
 										},
@@ -322,6 +323,7 @@
 											"top": 209,
 											"width": 460.1669921875,
 											"height": 13,
+											"underline": true,
 											"text": "-DEFAULT_ROWS: int = 15 {frozen}",
 											"horizontalAlignment": 0
 										},
@@ -1377,6 +1379,7 @@
 											"top": 709,
 											"width": 429.19677734375,
 											"height": 13,
+											"underline": true,
 											"text": "-WINDOW_HEIGHT: int = 700 {frozen}",
 											"horizontalAlignment": 0
 										},
@@ -1394,6 +1397,7 @@
 											"top": 724,
 											"width": 429.19677734375,
 											"height": 13,
+											"underline": true,
 											"text": "-WINDOW_WIDTH: int = 950 {frozen}",
 											"horizontalAlignment": 0
 										},
@@ -1411,6 +1415,7 @@
 											"top": 739,
 											"width": 429.19677734375,
 											"height": 13,
+											"underline": true,
 											"text": "-NOMMAGE_TAB: String = \"tab\" {frozen}",
 											"horizontalAlignment": 0
 										},
@@ -4426,6 +4431,7 @@
 							},
 							"name": "DEFAULT_COLUMN",
 							"visibility": "private",
+							"isStatic": true,
 							"type": "int",
 							"defaultValue": "14 {frozen}"
 						},
@@ -4437,6 +4443,7 @@
 							},
 							"name": "DEFAULT_ROWS",
 							"visibility": "private",
+							"isStatic": true,
 							"type": "int",
 							"defaultValue": "15 {frozen}"
 						},
@@ -4910,9 +4917,9 @@
 											},
 											"visible": false,
 											"font": "Arial;13;0",
-											"width": 64.2763671875,
+											"width": 64.5556640625,
 											"height": 13,
-											"text": "(from view)"
+											"text": "(from View)"
 										},
 										{
 											"_type": "LabelView",
@@ -5114,9 +5121,9 @@
 											},
 											"visible": false,
 											"font": "Arial;13;0",
-											"width": 64.2763671875,
+											"width": 64.5556640625,
 											"height": 13,
-											"text": "(from view)"
+											"text": "(from View)"
 										},
 										{
 											"_type": "LabelView",
@@ -5322,9 +5329,9 @@
 											"font": "Arial;13;0",
 											"left": -192,
 											"top": -32,
-											"width": 64.2763671875,
+											"width": 64.5556640625,
 											"height": 13,
-											"text": "(from view)"
+											"text": "(from View)"
 										},
 										{
 											"_type": "LabelView",
@@ -6515,6 +6522,7 @@
 									},
 									"name": "WINDOW_HEIGHT",
 									"visibility": "private",
+									"isStatic": true,
 									"type": "int",
 									"defaultValue": "700 {frozen}"
 								},
@@ -6526,6 +6534,7 @@
 									},
 									"name": "WINDOW_WIDTH",
 									"visibility": "private",
+									"isStatic": true,
 									"type": "int",
 									"defaultValue": "950 {frozen}"
 								},
@@ -6537,6 +6546,7 @@
 									},
 									"name": "NOMMAGE_TAB",
 									"visibility": "private",
+									"isStatic": true,
 									"type": "String",
 									"defaultValue": "\"tab\" {frozen}"
 								},

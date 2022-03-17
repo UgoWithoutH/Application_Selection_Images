@@ -21,8 +21,8 @@ public class CataloguePage {
     private Image whiteSquare = new Image(String.valueOf(getClass().getResource("/Images/TransparentSquare32x32.png").toURI().toURL()));
     private int nbPages = 0;
     private Image[][] currentPage;
-    private final int DEFAULT_COLUMN = 14;
-    private final int DEFAULT_ROWS = 15;
+    private static final int DEFAULT_COLUMN = 14;
+    private static final int DEFAULT_ROWS = 15;
 
     /**
      * Constructeur du catalogue Page ne fait rien
