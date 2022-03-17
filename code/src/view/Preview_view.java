@@ -18,6 +18,10 @@ import modele.Manager;
 
 import java.io.IOException;
 
+/**
+ * Vue d'aperçu initalisation de cette vue, du canvas de cette vue ainsi que les images nécessaire pour cette vue
+ * @author Tremblay Jeremy, Vignon Ugo, Viton Antoine, Wissocq Maxime, Coudour Adrien
+ */
 public class Preview_view {
 
     @FXML
@@ -33,10 +37,22 @@ public class Preview_view {
     public void initialize(){
     }
 
+    /**
+     * Modificaiton du manager actuel de la vue d'aperçu
+     * @param manager nouveau manager
+     */
     public void setManager(Manager manager) {
         this.manager = manager;
     }
 
+    /**
+     * Initialisation de la vue d'aperçu
+     * Récupération du nombre de colonne et de ligne du Preview Canvas
+     * Initialisation du boutton de retour
+     * Création un canvas de la taille du nombre de ligne et de colonne, création d'un scroll pane
+     * @param nbColumnCanvas nombre de colonne du canvas
+     * @param nbRowsCanvas nombre de ligne du canvas
+     */
     public void initializePreviewView(int nbColumnCanvas, int nbRowsCanvas){
         this.nbColumnCanvas = nbColumnCanvas;
         nbColumnPreviewCanvas = nbColumnCanvas * manager.getCataloguePage().getNbPages();
@@ -70,11 +86,25 @@ public class Preview_view {
         mainNode.getChildren().add(vb);
     }
 
+    /**
+     * Initialisation du canvas
+     * @param cv canvas de la vue d'aperçu
+     * @param nbColumnCanvas nombre de colonne du canvas
+     * @param nbRowsCancas nombre de ligne du canvas
+     */
     private void initializePreviewCanvas(Canvas cv, int nbColumnCanvas, int nbRowsCancas){
         initializeImagesPreviewCanvas(cv,nbColumnCanvas,nbRowsCancas);
         InitializerCanvas.initializeLinesCanvas(cv,nbColumnCanvas,nbRowsCancas);
     }
 
+    /**
+     * Initialisation des images d'aperçu du canvas
+     * Parcours du tableau récupération de l'image de la bonne page
+     * Affichage de l'image au bonne endroit
+     * @param cv canvas de l'aperçu du canvas
+     * @param nbColumn nombre de colonne du canvas
+     * @param nbRows nombre de ligne du canvas
+     */
     private void initializeImagesPreviewCanvas(Canvas cv, int nbColumn, int nbRows){
         int widthDraw = 0, heightDraw = 0;
         int nbTab = nbColumn/nbColumnCanvas;
@@ -93,8 +123,4 @@ public class Preview_view {
             }
         }
     }
-
-
-
-
 }

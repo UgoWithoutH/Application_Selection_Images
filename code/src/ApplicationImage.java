@@ -6,7 +6,18 @@ import javafx.stage.Stage;
 import view.Loading_view;
 import view.Navigator;
 
+/**
+ * Classe principal du projet permet de créer la stage du projet avec sa taille et de générer le FXML
+ * Etend de la classe Application de java
+ * @author Tremblay Jeremy, Vignon Ugo, Viton Antoine, Wissocq Maxime, Coudour Adrien
+ */
 public class ApplicationImage extends Application {
+    /**
+     * Redéfinition de la classe Application
+     * Définit les paramètres du stage et génère le FXML
+     * @param primaryStage Container de java permettant l'affichage
+     * @throws Exception si le fxmlLoader ne réussit par à charger le fichier FXML
+     */
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setWidth(950);

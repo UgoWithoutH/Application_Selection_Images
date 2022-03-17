@@ -6,7 +6,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -20,12 +19,20 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.List;
 
-
+/**
+ * Chargement de la vue
+ * @author Tremblay Jeremy, Vignon Ugo, Viton Antoine, Wissocq Maxime, Coudour Adrien
+ */
 public class Loading_view {
 
     @FXML
     private Pane mainNode;
 
+    /**
+     * Initialisation du FXML
+     * Création du manager des bouton de chargement des tilesets qui utilise la bonne extension
+     * Initialisation du fxml de la page
+     */
     @FXML
     public void initialize(){
         try {

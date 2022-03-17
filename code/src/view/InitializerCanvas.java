@@ -6,8 +6,21 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import modele.CataloguePage;
 
+/**
+ * Iniatilasation du canvas
+ * @author Tremblay Jeremy, Vignon Ugo, Viton Antoine, Wissocq Maxime, Coudour Adrien
+ */
 public abstract class InitializerCanvas {
-
+    /**
+     * Iniatialisation du canvas
+     * Parcours du nombre de ligne et de colonne, affichage d'une image vide si la page est vide
+     * sinon affiche l'image correspondante
+     * @param cv canvas permettant l'affichage
+     * @param nbColumn nombre de colonne
+     * @param nbRows nombre de ligne
+     * @param cataloguePage catalogue des pages chargés par l'utilisateur
+     * @param transparentSquare Image transparent permettant l'affichage si le nombre de page est null
+     */
     public static void initializeImagesCanvas(Canvas cv, int nbColumn, int nbRows, CataloguePage cataloguePage, Image transparentSquare){
         int widthDraw = 0, heightDraw = 0;
 
@@ -29,6 +42,13 @@ public abstract class InitializerCanvas {
         }
     }
 
+    /**
+     * Initialisation des lignes du canvas
+     * Parcours du nombre de ligne et des colonnes
+     * @param cv Canvas où se dérouler l'affichage
+     * @param nbColumn nombre de colonne du canvas
+     * @param nbRows nombre de ligne du canvas
+     */
     public static void initializeLinesCanvas(Canvas cv, int nbColumn, int nbRows){
         int widthMax = ((int) cv.getWidth()/32)*32;
         int heightMax = ((int) cv.getHeight()/32)*32;

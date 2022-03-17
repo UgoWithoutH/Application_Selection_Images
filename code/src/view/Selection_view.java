@@ -12,7 +12,6 @@ import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.image.*;
 import javafx.scene.input.MouseEvent;
@@ -30,6 +29,10 @@ import java.net.URISyntaxException;
 import java.nio.IntBuffer;
 import java.util.*;
 
+/**
+ * Initialisation des éléments d'affichage avec leur paramètre et début de l'affichage
+ * @author Tremblay Jeremy, Vignon Ugo, Viton Antoine, Wissocq Maxime, Coudour Adrien
+ */
 public class Selection_view {
 
     @FXML
@@ -53,6 +56,9 @@ public class Selection_view {
     private Image transparentSquare;
     private SplitPane mainNodeSelection;
 
+    /**
+     * Méthode d'initialisation de FXML, charge l'image transparente, récupère l'erreur si l'image est mal générer
+     */
     @FXML
     private void initialize(){
         try {
@@ -62,10 +68,18 @@ public class Selection_view {
         }
     }
 
+    /**
+     * Modification du manager de la vue
+     * @param manager nouveau manager de la vue
+     */
     public void setManager(Manager manager){
         this.manager = manager;
     }
 
+    /**
+     * Initialisation de la vue, avec les différents bouton nécessaire, pour l'ajout des page le changement des pages
+     * pour revenir en arrière, exporter l'image la supprimer. Création des éléments javafx permettant l'affichage
+     */
     public void initializeSelectionView() {
         double widthDelimitation = WINDOW_WIDTH/2;
         double widthCanvas = widthDelimitation;
@@ -167,43 +181,50 @@ public class Selection_view {
         mainNode.getChildren().add(mainNodeSelection);
     }
 
-private void exportImage(){
-    Image[][] tab = initializeArrayExport();
-    WritableImage writableImage = new WritableImage(tab.length * 32, tab[0].length * 32);
-    PixelWriter px = writableImage.getPixelWriter();
+    /**
+     * Exportation des images, demande de sauvegarde des images en différent format
+     */
+    private void exportImage(){
+        Image[][] tab = initializeArrayExport();
+        WritableImage writableImage = new WritableImage(tab.length * 32, tab[0].length * 32);
+        PixelWriter px = writableImage.getPixelWriter();
 
-    for (int x = 0; x < tab.length; x++) {
-        for (int y = 0; y < tab[0].length; y++) {
-            int[] pixels = new int[32 * 32];
-            PixelReader prt = tab[x][y].getPixelReader();
-            PixelFormat.Type type = prt.getPixelFormat().getType();
-            WritablePixelFormat<IntBuffer> format = null;
-            if (type == PixelFormat.Type.INT_ARGB_PRE) {
-                format = PixelFormat.getIntArgbPreInstance();
-            } else {
-                format = PixelFormat.getIntArgbInstance();
+        for (int x = 0; x < tab.length; x++) {
+            for (int y = 0; y < tab[0].length; y++) {
+                int[] pixels = new int[32 * 32];
+                PixelReader prt = tab[x][y].getPixelReader();
+                PixelFormat.Type type = prt.getPixelFormat().getType();
+                WritablePixelFormat<IntBuffer> format = null;
+                if (type == PixelFormat.Type.INT_ARGB_PRE) {
+                    format = PixelFormat.getIntArgbPreInstance();
+                } else {
+                    format = PixelFormat.getIntArgbInstance();
+                }
+                prt.getPixels(0, 0, 32, 32, format, pixels, 0, 32);
+                px.setPixels(x * 32, y * 32, 32, 32, format, pixels, 0, 32);
             }
-            prt.getPixels(0, 0, 32, 32, format, pixels, 0, 32);
-            px.setPixels(x * 32, y * 32, 32, 32, format, pixels, 0, 32);
+        }
+        FileChooser f = new FileChooser();
+        f.setTitle("Save tileset");
+        f.setInitialFileName("tileset");
+        f.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("PNG", "*.png"),
+                                       new FileChooser.ExtensionFilter("JPG","*.jpeg","*.jpeg","*.jpe","*.jfif"));
+        File file = f.showSaveDialog(mainNode.getScene().getWindow());
+        if(file == null) return;
+        f.setInitialDirectory(file.getParentFile());
+        try {
+            ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "PNG", file);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
-    FileChooser f = new FileChooser();
-    f.setTitle("Save tileset");
-    f.setInitialFileName("tileset");
-    f.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("PNG", "*.png"),
-                                   new FileChooser.ExtensionFilter("JPG","*.jpeg","*.jpeg","*.jpe","*.jfif"));
-    File file = f.showSaveDialog(mainNode.getScene().getWindow());
-    if(file == null) return;
-    f.setInitialDirectory(file.getParentFile());
-    try {
-        ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "PNG", file);
-    } catch (IOException e) {
-        e.printStackTrace();
-    }
-}
 
 //PreviewView
 
+    /**
+     * Initilisation de la liste des exports, parcours le nombre d'onglet du projet
+     * @return Une image en 2 dimension correspondant au ligne et au colonne
+     */
     private Image[][] initializeArrayExport(){
         CataloguePage cataloguePage = manager.getCataloguePage();
 
@@ -224,6 +245,11 @@ private void exportImage(){
     }
 
 // Tabs
+
+    /**
+     * Initialisation des tabPane récupération des TileSet appel du découpeur, et initialisation du gridpane
+     * @param tabpane tabpane à charger
+     */
     private void initializeTabs(TabPane tabpane){
         Decoupeur d = new Decoupeur();
         ScrollPane sp;
@@ -269,6 +295,11 @@ private void exportImage(){
         currentImages = map.get("tab1");
     }
 
+    /**
+     * Récupère le clique de la souris, si le clique est sur une image alors on enlève l'image d'avant et on affiche l'autre
+     * sinon affiche l'image
+     * @param event Evénement de la souris déclencher quand on clique sur le canvas
+     */
     //Canvas
     private void drawClickCanvas(MouseEvent event){
         double decalageX = 2.66;
@@ -294,11 +325,24 @@ private void exportImage(){
         InitializerCanvas.initializeLinesCanvas(cv,nbColumnCanvas,nbRowsCancas);
     }
 
+    /**
+     * Initialisation du canvas
+     * @param cv Canvas où sera déroulé l'affichae
+     * @param nbColumn Nombre de colonne créer son tileset
+     * @param nbRows nombre de ligne pour créer son tileset
+     */
     private void initializeCanvas(Canvas cv, int nbColumn, int nbRows){
         InitializerCanvas.initializeImagesCanvas(cv, nbColumn, nbRows,manager.getCataloguePage(),transparentSquare);
         InitializerCanvas.initializeLinesCanvas(cv, nbColumn, nbRows);
     }
 
+    /**
+     * Initialisation du gridPane
+     * Récuprer la taille des images découpé ainsi que son imaeg.
+     * @param myListDecoupe List des images découper
+     * @param tileset image du tileset chargé par l'utilisateur
+     * @return le gridPane associé avec les tilesets ainsi que les images découpés
+     */
     //GridPane
     private GridPane initializeGridPane(List<Image> myListDecoupe, Image tileset){
         GridPane gp = new GridPane();

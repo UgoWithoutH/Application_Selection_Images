@@ -3,12 +3,12 @@ package modele;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritableImage;
-
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 
-
+/**
+ * Classe de découpeur des tuiles
+ * @author Tremblay Jeremy, Vignon Ugo, Viton Antoine, Wissocq Maxime, Coudour Adrien
+ */
 public class Decoupeur {
 
     /**
@@ -17,7 +17,7 @@ public class Decoupeur {
      * @param largeurTuile Largeur d'un Tuile (32)
      * @param hauteurTuile Hauteur d'une Tuile (32)
      * @return La liste des Tuiles découpé en format Image
-     * @author Tremblay Jeremy, Vignon Ugo, Viton Antoine, Wissocq Maxime, Coudour Adrien
+     *
      */
     public static LinkedList<Image> decoupe(String chemin, int largeurTuile, int hauteurTuile) {
         LinkedList<Image> listeDeTuiles = new LinkedList<>();
